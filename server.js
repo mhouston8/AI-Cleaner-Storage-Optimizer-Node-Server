@@ -17,7 +17,28 @@ app.get('/', (req, res) => {
   res.json({ message: 'Express server is running!' });
 });
 
-// Push notification endpoint
+// Test Firebase connection
+app.get('/test/firebase', (req, res) => {
+  try {
+    const { admin } = require('./config/firebase');
+    const serviceAccount = require('./mobile-ai-storage-cleaner-firebase-adminsdk-fbsvc-3dc69c8622.json');
+    
+    res.json({ 
+      success: true, 
+      message: 'Firebase Admin is initialized',
+      projectId: serviceAccount.project_id,
+      clientEmail: serviceAccount.client_email
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Firebase not properly initialized',
+      details: error.message 
+    });
+  }
+});
+
+// Push notification endpoint (single device)
 app.post('/send-notification', async (req, res) => {
   try {
     const { token, title, body, data } = req.body;
@@ -40,6 +61,94 @@ app.post('/send-notification', async (req, res) => {
   } catch (error) {
     console.error('Error sending notification:', error);
     res.status(500).json({ error: 'Failed to send notification', details: error.message });
+  }
+});
+
+// Send notification to all users
+app.post('/send-notification/all', async (req, res) => {
+  try {
+    const { title, body, data, onlyEnabled = true } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'Title and body are required' });
+    }
+
+    // Get all users with push notifications enabled (if onlyEnabled is true)
+    let usersQuery = supabase.from('Users').select('id');
+    if (onlyEnabled) {
+      usersQuery = usersQuery.eq('push_notifications_enabled', true);
+    }
+
+    const { data: users, error: usersError } = await usersQuery;
+
+    if (usersError) {
+      throw usersError;
+    }
+
+    if (!users || users.length === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'No users found to send notifications to',
+        sentCount: 0 
+      });
+    }
+
+    const userIds = users.map(user => user.id);
+
+    // Get all device tokens for these users
+    // Adjust field names based on your User_Devices table schema
+    const { data: devices, error: devicesError } = await supabase
+      .from('User_Devices')
+      .select('device_token, fcm_token, token') // Try common field names
+      .in('user_id', userIds);
+
+    if (devicesError) {
+      throw devicesError;
+    }
+
+    if (!devices || devices.length === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'No device tokens found',
+        sentCount: 0 
+      });
+    }
+
+    // Extract tokens (try different possible field names)
+    const tokens = devices
+      .map(device => device.device_token || device.fcm_token || device.token)
+      .filter(token => token && token.trim() !== '');
+
+    if (tokens.length === 0) {
+      return res.json({ 
+        success: true, 
+        message: 'No valid device tokens found',
+        sentCount: 0 
+      });
+    }
+
+    // Send notifications to all tokens using multicast
+    const message = {
+      notification: {
+        title: title,
+        body: body
+      },
+      data: data || {},
+      tokens: tokens
+    };
+
+    const response = await messaging.sendEachForMulticast(message);
+    
+    res.json({ 
+      success: true, 
+      sentCount: response.successCount,
+      failedCount: response.failureCount,
+      totalTokens: tokens.length,
+      responses: response.responses
+    });
+  } catch (error) {
+    console.error('Error sending notifications to all users:', error);
+    res.status(500).json({ error: 'Failed to send notifications', details: error.message });
   }
 });
 
