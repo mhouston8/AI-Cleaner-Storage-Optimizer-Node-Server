@@ -1,4 +1,6 @@
 import * as admin from 'firebase-admin';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Get Firebase service account from environment variable (Render) or file (local)
 let serviceAccount: admin.ServiceAccount;
@@ -13,7 +15,17 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 } else {
   // Read from file (for local development)
-  serviceAccount = require('../mobile-ai-storage-cleaner-firebase-adminsdk-fbsvc-3dc69c8622.json') as admin.ServiceAccount;
+  const serviceAccountPath = path.join(__dirname, '../../config/mobile-ai-storage-cleaner-firebase-adminsdk-fbsvc-3dc69c8622.json');
+  
+  if (fs.existsSync(serviceAccountPath)) {
+    serviceAccount = require(serviceAccountPath) as admin.ServiceAccount;
+  } else {
+    throw new Error(
+      'Firebase service account not found. ' +
+      'Provide FIREBASE_SERVICE_ACCOUNT environment variable ' +
+      'or place the JSON file in the root directory.'
+    );
+  }
 }
 
 // Initialize Firebase Admin

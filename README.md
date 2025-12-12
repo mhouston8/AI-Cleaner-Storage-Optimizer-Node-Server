@@ -128,15 +128,37 @@ SUPABASE_SERVICE_ROLE_KEY=your_prod_key
 
 ```
 node_server/
-├── config/
-│   ├── firebase.ts      # Firebase Admin configuration
-│   ├── supabase.ts      # Supabase client configuration
-│   └── env.ts         # Environment configuration helper
-├── dist/                # Compiled JavaScript (generated)
-├── server.ts           # Main server file
-├── tsconfig.json       # TypeScript configuration
-├── package.json        # Dependencies and scripts
-└── .env                # Environment variables (not in git)
+├── src/                        # Source code
+│   ├── server.ts              # Main server entry point
+│   ├── routes/                # API route definitions
+│   │   ├── index.ts          # Route aggregator
+│   │   ├── notificationRoutes.ts
+│   │   ├── userRoutes.ts
+│   │   ├── subscriptionRoutes.ts
+│   │   └── userDeviceRoutes.ts
+│   ├── controllers/           # Business logic handlers
+│   │   ├── notificationController.ts
+│   │   ├── userController.ts
+│   │   ├── subscriptionController.ts
+│   │   └── userDeviceController.ts
+│   ├── services/              # External service integrations
+│   │   ├── firebaseService.ts
+│   │   └── supabaseService.ts
+│   ├── types/                 # TypeScript type definitions
+│   │   └── index.ts
+│   └── config/                # Configuration files
+│       ├── firebase.ts
+│       └── supabase.ts
+├── config/                     # Secrets and sensitive files (not in git)
+│   └── *-firebase-adminsdk-*.json
+├── dist/                       # Compiled JavaScript (generated, not in git)
+├── tsconfig.json              # TypeScript configuration
+├── package.json               # Dependencies and scripts
+├── package-lock.json          # Dependency lock file
+├── render.yaml                # Render deployment configuration
+├── env.example                # Environment variables template
+├── README.md                  # This file
+└── .env                       # Environment variables (not in git)
 ```
 
 ## Best Practices
