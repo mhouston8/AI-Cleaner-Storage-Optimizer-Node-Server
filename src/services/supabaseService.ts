@@ -158,6 +158,19 @@ export const userService = {
     }
 
     return (data || []).map((user: { id: string }) => user.id);
+  },
+
+  async getNotSubscribed(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('Users')
+      .select('*')
+      .eq('is_subscribed', false);
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
   }
 };
 

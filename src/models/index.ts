@@ -14,6 +14,7 @@ export interface User {
   created_at?: string;              // Optional: nil when creating, database sets it
   updated_at?: string;              // Optional: nil when creating, database sets it
   push_notifications_enabled: boolean; // Required: Default to false (opt-in)
+  is_subscribed: boolean;          // Required: Quick check for active subscription
 }
 
 export interface Subscription {
