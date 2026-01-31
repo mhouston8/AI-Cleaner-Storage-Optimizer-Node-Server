@@ -3,6 +3,7 @@ import notificationRoutes from './notificationRoutes';
 import userRoutes from './userRoutes';
 import subscriptionRoutes from './subscriptionRoutes';
 import userDeviceRoutes from './userDeviceRoutes';
+import { privacyController } from '../controllers/privacyController';
 
 const router = Router();
 
@@ -19,6 +20,9 @@ router.get('/health', (req: Request, res: Response) => {
     service: 'Clean Sweep AI Node Server'
   });
 });
+
+// Privacy Policy endpoint
+router.get('/privacy-policy', privacyController.getPrivacyPolicy);
 
 // Mount route handlers
 router.use('/', notificationRoutes);

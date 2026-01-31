@@ -98,10 +98,10 @@ async function pingHealthEndpoint(): Promise<void> {
  * Initialize and start all cron jobs
  */
 export function startCronJobs(): void {
-  // Schedule: Run every 30 minutes
+  // Schedule: Run every 48 hours (every 2 days at midnight)
   // Format: second minute hour day month day-of-week
-  // '0 */30 * * * *' = Every 30 minutes (at :00 and :30)
-  cron.schedule('0 */30 * * * *', async () => {
+  // '0 0 0 */2 * *' = Every 2 days at 00:00:00 (midnight)
+  cron.schedule('0 0 0 */2 * *', async () => {
     await sendNotificationToNonSubscribedUsers();
   });
 
@@ -111,7 +111,7 @@ export function startCronJobs(): void {
     await pingHealthEndpoint();
   });
 
-  console.log('[Cron Jobs] Scheduled: Notification to non-subscribed users every 30 minutes');
+  console.log('[Cron Jobs] Scheduled: Notification to non-subscribed users every 48 hours');
   console.log('[Cron Jobs] Scheduled: Health ping every 10 minutes');
 }
 

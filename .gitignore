@@ -2,7 +2,7 @@ node_modules/
 .env
 *.log
 .DS_Store
-# config/*-firebase-adminsdk-*.json  # Commented out - service account needed for deployment
+config/*-firebase-adminsdk-*.json
 dist/
 *.js.map
 
